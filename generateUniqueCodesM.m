@@ -28,22 +28,6 @@ for dd = 1:(2^15-1) %Highest possible number is 32767 with 15 bits
         disp(dd);
     end
 end
-%%
-codeList = codeList(2:end,:);
-save('masterCodeList.mat', 'grand')
-%% Example for generating codes
-for i = 1:100
-    
-    subplot(10,10,i)
-    code = codeList(i,:);
-    im = reshape(code,5,5);
-    im = padarray(im,[1 1], 1, 'both');
-    
-    im = padarray(im, [1 1],'both');
-    imshow(im)
-    %title(grand(i));
-    
-    
-end
-
-set(gcf,'position', [-1651 -78 1523 1007])
+%% Optional saving to overwrite stored codelist
+ codeList = codeList(2:end,:);
+% save('masterCodeList.mat', 'grand')

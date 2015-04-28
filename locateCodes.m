@@ -232,6 +232,6 @@ if vis==1
     end
 end
 
-R = rmfield(R, 'FilledImage');
+R = rmfield(R, {'FilledImage', 'isQuad', 'passCode', 'Orientation'});
 hold off;
 %%
