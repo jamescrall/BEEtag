@@ -8,21 +8,22 @@ subplot(2,2,1);
 imshow(im);
 title('Original image 1');
 
-%Locate codes using the default threshold value
+%Locate codes using the default values
 subplot(2,2,2);
-codes = locateCodes(im, 1, 0.5, 1, 1, 100); 
-title('Tracked image 2');
+codes = locateCodes(im)
+title('Tracked image 1');
 
-%Look for codes
+
+%Read in second example file
 im2 = imread('scaleExample2.png');
 subplot(2,2,3);
 imshow(im2);
 title('Original image 2');
 
-%Locate codes in the image using a manual threshold and outputing a blacka
-%and white image
+%Locate codes in the image using some manual input values instead of
+%defaults
 subplot(2,2,4);
-codes2 = locateCodes(im2, 0, 0.2, 0, 1, 100); 
+codes2 = locateCodes(im2, 'colMode', 1, 'thresh', 0.2)
 title('Tracked image 2');
 
 %look at 'help locateCodes' to figure out what these 

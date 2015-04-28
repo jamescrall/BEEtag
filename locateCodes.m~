@@ -14,19 +14,10 @@ function R = locateCodes(im, varargin)
 %'vis' - whether or not to visualize results, 0 being no visualization, 1
 %being visualization. Default is visualization
 %
-%'sizeThresh' - size threshold for tags in pixels, highly specific to camera
+%'tagThresh' - size threshold for tags in pixels, highly specific to camera
 %and capture system. Only really helps to clean out noise - start with a
 %low number at first! Default is 100
-%
-% Outputs are:
-% Area: area of tag in pixel:
-% Centroid: X and Y coordinates of tag center
-% Bounding Box: Boundig region of image containing tag
-% corners: Coordinates of four calculated corner points of tag
-% code: 25 bit binary code read from tag
-% number: original identification number of tag
-% frontX: X coordiante (in pixels) of tag "front"
-% frontY: Y coordinate (in pixels) of tag "front" 
+
 %% Do initial image conversion and display
 if ndims(im) > 2
     GRAY = rgb2gray(im);
@@ -58,15 +49,15 @@ else
     colMode = cell2mat(varargin(find(colM == 1) + 1));
 end
 
-tagTh = strcmp('sizeThresh', varargin);
+tagTh = strcmp('tagThresh', varargin);
 if sum(tagTh) == 0
-    sizeThresh = 100;
+    tagThresh = 100;
 else
-    sizeThresh = cell2mat(varargin(find(tagTh == 1) + 1));
+    tagThresh = cell2mat(varargin(find(tagTh == 1) + 1));
 end
 
 
-
+%
 BW=im2bw(GRAY, thresh);
 
 if colMode == 1 && vis == 1
@@ -92,13 +83,10 @@ cornerSize = 10;
 R = regionprops(BW, 'Centroid','Area','BoundingBox','FilledImage');
 
 %Sets size threshold for tags
-R = R([R.Area] > sizeThresh);
+R = R([R.Area] > tagThresh);
 
 if isempty(R)
-    disp('No sufficiently large what regions detected - try changing thresholding values for binary image threshold (thresh) or tag size (sizeThresh)');
-    return
-end
-
+    disp('No sufficiently large what regions detected - try changing 
 for i = 1:numel(R)
     try
         [isq,cnr] = fitquad( R(i).BoundingBox, R(i).FilledImage);
@@ -114,6 +102,7 @@ for i = 1:numel(R)
     end
 end
 
+if
 R = R(logical([R.isQuad]));
 
 %%
