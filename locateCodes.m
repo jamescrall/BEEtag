@@ -1,0 +1,237 @@
+function R = locateCodes(im, colMode, thresh, threshmode, vis, tagThresh)
+%locates optical tags and spits out regionprops info for all tags
+%
+% Input form is locateCodes(im, colMode, thresh, threshmode, vis, tagThresh)
+%
+%'im' is an image containing tags, can be rgb or grayscale
+%
+%'colMode' determines whether to show gray (1)  or bw (0) image, 2 is rgb, anything else (i.e. 3) plots on whatever background is already plotted
+%
+%'thresh' indicates thresholding value to turn grayscale into a binary image
+%
+%'threshmode' indicates whether to take thresholding value from grayscale(1) or hardcoded from thresh (0)
+%
+%'vis' tells whether or not to visualize results, 0 being no visualization, 1 being visualization
+%
+%'tagThresh' determines size threshold for tags in pixels, highly specific to camera and capture system. Only reall helps to clean out noise - start with a low number at first!
+
+%% Do initial image conversion and display
+if ndims(im) > 2
+    GRAY = rgb2gray(im);
+else
+    GRAY = im;
+end
+%imshow(GRAY)
+%GRAY = imsharpen(GRAY);
+% Threshold to get out bee bodies
+%Gets most of the
+if threshmode ==1
+    thresh=graythresh(GRAY);
+end
+BW=im2bw(GRAY, thresh);
+
+if colMode == 1 && vis == 1
+    imshow(GRAY);
+end
+
+if colMode == 0 && vis== 1
+    imshow(BW);
+end
+
+if colMode == 2 && vis == 1
+    imshow(im);
+end
+
+
+
+%%
+
+% Add bounding row of pixels
+%BW = padarray(BW,[1 1],1,'both');
+
+R = regionprops(BW, 'Centroid','Area','BoundingBox','FilledImage');
+
+%Sets size threshold for tags
+R = R([R.Area] > tagThresh);
+for i = 1:numel(R)
+    try
+        [isq,cnr] = fitquad( R(i).BoundingBox, R(i).FilledImage);
+        R(i).isQuad = isq;
+        
+    catch
+        R(i).isQuad = 0;
+        continue
+    end
+    if isq
+        R(i).corners = cnr;
+        
+    end
+end
+
+R = R(logical([R.isQuad]));
+
+%%
+
+if isempty(R)
+    disp('No potentially valid tag regions found')
+    return
+end
+for i=1:numel(R)
+    % for i=10
+    %%
+    corners = R(i).corners;
+    cornersP = [corners(2,:) ;corners(1,:)];
+    tform = maketform('projective', cornersP',[ 0 0;  1 0;  1  1;  0 1]);
+    udata = [0 1];  vdata = [0 1];
+    
+    hold on
+    
+    for bb = 1:4
+        if vis ==1
+            plot(cornersP(1,bb), cornersP(2,bb),'go', 'MarkerSize', bb*2)
+        end
+        
+    end
+    %Set up original coordinates in grid
+    x = [5.5/7 4.5/7 3.5/7 2.5/7 1.5/7];
+    xp = [repmat(x(1), 5, 1) ;repmat(x(2), 5, 1);repmat(x(3), 5, 1);repmat(x(4), 5, 1);repmat(x(5), 5, 1)];
+    P = [xp  repmat(x,1,5)'];
+    
+    %Set up coordinates for border
+    %PBX = [repmat(0.5,6,1);repmat(5.5,7,1); (1.5:1:4.5)';(1.5:1:4.5)'];
+    %PBY = [0.5:1:5.5 0.5:1:5.5 repmat(0.5,1,4) repmat(5.5,1,4)]';
+    
+    %PB = [PBX PBY]/6;
+    f = [ 0 0;  0 1;  1  1;  1 0];
+    pts = tforminv(tform,P);
+    pts = round(pts);
+    
+    %bpts = tforminv(tform,PB);
+    %bpts = round(bpts);
+    hold on;
+    
+    for cc = 1:numel(pts(:,1))
+        %plot(pts(cc,1), pts(cc,2), 'g+', 'MarkerSize',2);
+    end
+    
+    %for cc = 1:numel(bpts(:,1))
+    %plot(bpts(cc,1), bpts(cc,2), 'rx', 'MarkerSize',6);
+    %end
+    
+    
+    %
+    %Extract local pixel values around
+    ptvals = [];
+    for aa = 1:numel(pts(:,1))
+        cur = pts(aa,:);
+        cur = fliplr(cur);
+        %Average over nine pixels
+        %ptvals(aa) = median(reshape(BW((cur(1)-1):(cur(1)+1),(cur(2)-1):(cur(2)+1))',1,9));
+        %Comment in to use only single pixel values
+        try
+            ptvals(aa) = BW(cur(1),cur(2));
+        catch
+            continue
+        end
+        
+    end
+    
+    % bptvals = [];
+    % for aa = 1:numel(bpts(:,1))
+    %     cur = bpts(aa,:);
+    %     cur = fliplr(cur);
+    %     bptvals(aa) = median(reshape(BW((cur(1)-1):(cur(1)+1),(cur(2)-1):(cur(2)+1))',1,9));
+    % end
+    
+    %Just checks that the border is mostly white
+    % if sum(bptvals) >=17
+    %     borderCheck = 1;
+    % else borderCheck = 0;
+    % end
+    
+    
+    
+    
+    if numel(ptvals) == 25
+    code = [ptvals(1:5);ptvals(6:10);ptvals(11:15);ptvals(16:20);ptvals(21:25)];
+    code = fliplr(code);
+    [pass code orientation] = checkOrs25(code);
+    
+    
+    R(i).passCode = pass;
+    R(i).code = code;
+    R(i).orientation = orientation;
+    else
+        R(i).passCode = 0;
+        R(i).code = [];
+        R(i).orientation = NaN;
+    end
+    %R(i).borderCheck = borderCheck;
+    
+end
+
+
+%% Remove invalid tags and find tag front
+R = R([R.passCode]==1);
+
+
+% Tag orientation
+for i=1:numel(R)
+    %%
+    R(i).number = bin2dec(num2str(R(i).code(1:15)));
+    
+    %Plot the corners
+    corners = R(i).corners;
+    cornersP = [corners(2,:) ;corners(1,:)];
+    tform = maketform('projective', cornersP',[ 0 0;  1 0;  1  1;  0 1]);
+    udata = [0 1];  vdata = [0 1];
+    
+    
+    %%
+    or = R(i).orientation;
+    if or == 1
+        ind = [1 2];
+    elseif or == 2
+        ind = [2 3];
+    elseif or ==3
+        ind = [3 4];
+    elseif or ==4
+        ind = [1 4];
+    end
+    
+    frontX = mean(cornersP(1,ind));
+    frontY = mean(cornersP(2,[1 4]));
+    
+    R(i).frontX = frontX;
+    R(i).frontY = frontY;
+    %
+end
+
+%% Remove codes that aren't part of master list
+load masterCodeList;
+if ~isempty(R)
+    R = R(ismember([R.number], grand));
+else
+    disp('No codes detected');
+end
+
+
+%% Optional plotting
+
+if vis==1
+    for i = 1:numel(R)
+    corners = R(i).corners;
+    cornersP = [corners(2,:) ;corners(1,:)];
+    text(R(i).Centroid(1), R(i).Centroid(2), num2str(R(i).number), 'FontSize',30, 'color','r');
+    hold on
+    for bb = 1:4
+        plot(cornersP(1,bb), cornersP(2,bb),'go', 'MarkerSize', bb*2)
+    end
+    
+    plot(mean(cornersP(1,ind)), mean(cornersP(2,ind)), 'b.', 'MarkerSize', 15);
+    end
+end
+
+R = rmfield(R, 'FilledImage');
+hold off;
+%%
