@@ -13,7 +13,7 @@ INSTALLATION
 1. Download all functions and files from available on github from
 https://github.com/jamescrall/idBEE/ and add to matlab path
 
-2. Run barcodeExample.m to check functionality
+2. Run trackingExample.m to check functionality
 
 
 
