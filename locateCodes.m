@@ -1,19 +1,16 @@
 function R = locateCodes(im, varargin)
 %locates optical tags and spits out regionprops info for all tags
 %
-% Input form is locateCodes(im, colMode, thresh, threshmode, vis, tagThresh)
+% Input form is locateCodes(im, varargin)
 %'im' is an image containing tags, can be rgb or grayscale - currently not
 %supported to directly input 
 %
 % Optional inputs include:
 %'colMode' - determines whether to show gray (1)  or bw (0) image, 2 is rgb, anything else (i.e. 3) plots on whatever background is already plotted
-%
 %'thresh' - thresholding value to turn grayscale into a binary image,
 %ranges from 0 to 1, default is to calculate threshold value automatically
-%
 %'vis' - whether or not to visualize results, 0 being no visualization, 1
 %being visualization. Default is visualization
-%
 %'sizeThresh' - size threshold for tags in pixels, highly specific to camera
 %and capture system. Only really helps to clean out noise - start with a
 %low number at first! Default is 100
@@ -27,6 +24,8 @@ function R = locateCodes(im, varargin)
 % number: original identification number of tag
 % frontX: X coordiante (in pixels) of tag "front"
 % frontY: Y coordinate (in pixels) of tag "front" 
+
+
 %% Do initial image conversion and display
 if ndims(im) > 2
     GRAY = rgb2gray(im);
@@ -92,7 +91,14 @@ cornerSize = 10;
 R = regionprops(BW, 'Centroid','Area','BoundingBox','FilledImage');
 
 %Sets size threshold for tags
+if numel(sizeThresh) == 1
 R = R([R.Area] > sizeThresh);
+elseif numel(sizeThresh) == 2
+    R =  R([R.Area] > sizeThresh(1) & [R.Area] < sizeThresh(2));
+else
+    disp('sizeThresh has an incorrect numbers of elements: Please supply either a single number or a two-element numeric vector');
+    return;
+end
 
 if isempty(R)
     disp('No sufficiently large what regions detected - try changing thresholding values for binary image threshold (thresh) or tag size (sizeThresh)');
