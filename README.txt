@@ -25,7 +25,7 @@ orientation as matlab structure. For input options and output details, see "help
 locateCodes".
 
 2. CreatePrintableCode and Create100PrintableCodes.m are a function and example
-(respectively), of how to generate idBEE tags in a printable format. CreatePrintable Codes
+(respectively), of how to generate beeTags in a printable format. CreatePrintable Codes
 generates the 100tags.pdf image in the src folde, which is print-ready and contains the
 first 100 usable codes. That script can be modified to use more than a hundred codes,
 drawing them from the "grand" object in "masterCodeList.mat"
