@@ -1,4 +1,4 @@
-function [passBin codesFinal orientation] = checkOrs(imc)
+function [passBin codesFinal orientation codes] = checkOrs(imc)
 
 check = [];
 passBin = [];

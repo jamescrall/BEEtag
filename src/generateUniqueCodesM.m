@@ -18,7 +18,8 @@ for dd = 1:(2^15-1) %Highest possible number is 32767 with 15 bits
             distM(ee) = sum(abs(codesFinal(ee,:) - code));
         end
         
-        if  min(distM) > 2
+        if min(distM) > 2
+        %if  min(distM) > 6  %%Comment in to generate "robustCodeList"
             grand = [grand dd];
             codesFinal = [codesFinal ; codes];
             codeList = [codeList; reshape(test', 1, 25)];
@@ -30,4 +31,5 @@ for dd = 1:(2^15-1) %Highest possible number is 32767 with 15 bits
 end
 %% Optional saving to overwrite stored codelist
  codeList = codeList(2:end,:);
-% save('masterCodeList.mat', 'grand')
+ save('masterCodeList.mat', 'grand');
+ %save('robustCodeList.mat', 'grand')
