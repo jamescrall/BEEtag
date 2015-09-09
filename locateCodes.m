@@ -2,28 +2,28 @@ function R = locateCodes(im, varargin)
 %locates optical tags and spits out regionprops info for all tags
 %
 % Input form is locateCodes(im, varargin)
-
+%
 % Required input:
-
+%
 %'im' is an image containing tags, can be rgb or grayscale - currently not
 %supported to directly input
-
-
+%
+%
 % Optional inputs include:
-
+%
 %'colMode' - determines whether to show gray (1)  or bw (0) image, 2 is
 %   rgb, anything else (i.e. 3) plots on whatever background is already plotted
-
+%
 %'thresh' - thresholding value to turn grayscale into a binary image,
 %   ranges from 0 to 1, default is to calculate threshold value automatically
-
+%
 %'vis' - whether or not to visualize results, 0 being no visualization, 1
 %   being visualization. Default is visualization
-
+%
 %'sizeThresh' - size threshold for tags in pixels, highly specific to camera
 %   and capture system. Only really helps to clean out noise - start with a
 %   low number at first! Default is 100
-
+%
 %'robustTrack' - whether or not to identify binary values for tracking codes
 %   from black and white binary image, or to track over a range of values from
 %   an original grayscale image with intelligent thresholding. The latter
@@ -32,41 +32,41 @@ function R = locateCodes(im, varargin)
 %   restrictions on valied tags is also recommended. When using this option,
 %   you must specify a grayscale image to take the pixel values from (can
 %   be the same as 'im');
-
+%
 %'tagList'- option to add list of pre-specified valid tags to track.
 %   Output from any other tags found in the picture is ignored
-
+%
 %'threshMode' - options for black-white thresholding. Default is 0, which
 %   uses supplied threshold and above techniques. Alternative option is
 %   Bradley local adaptive thresholding, which helps account for local
 %   variation in illumination within the image.
-
+%
 % 'bradleyFilterSize' - two element vector defining the X and Y
 %   (respectively) size of locally adaptive filter. Only supply when
 %   'threshMode' is 1 (using adaptive thresholding).
-
+%
 % 'bradleyThreshold' - black-white threshold value after local filtering.
 %   Default value is 3, lower values produce darker images, and vice versa.
-
-
-
+%
+%
+%
 % Outputs are:
 % Area: area of tag in pixel:
-
+%
 % Centroid: X and Y coordinates of tag center
-
+%
 % Bounding Box: Boundig region of image containing tag
-
+%
 % corners: Coordinates of four calculated corner points of tag
-
+%
 % code: 25 bit binary code read from tag
-
+%
 % number: original identification number of tag
-
+%
 % frontX: X coordiante (in pixels) of tag "front"
-
+%
 % frontY: Y coordinate (in pixels) of tag "front"
-
+%
 
 %% Extract optional inputs, do initial image conversion, and display thresholded value
 
