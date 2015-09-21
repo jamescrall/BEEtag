@@ -34,7 +34,8 @@ function R = locateCodes(im, varargin)
 %   be the same as 'im');
 %
 %'tagList'- option to add list of pre-specified valid tags to track.
-%   Output from any other tags found in the picture is ignored
+%   Output from any other tags found in the picture is ignored. Must be a
+%   numerical vector containing a list of valid tags
 %
 %'threshMode' - options for black-white thresholding. Default is 0, which
 %   uses supplied threshold and above techniques. Alternative option is
@@ -409,6 +410,6 @@ if vis==1
     end
 end
 
-R = rmfield(R, {'FilledImage', 'isQuad', 'passCode'});
+R = rmfield(R, {'FilledImage', 'isQuad', 'passCode', 'orientation'});
 hold off;
 %%
