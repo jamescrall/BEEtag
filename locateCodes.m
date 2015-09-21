@@ -20,9 +20,10 @@ function R = locateCodes(im, varargin)
 %'vis' - whether or not to visualize results, 0 being no visualization, 1
 %   being visualization. Default is visualization
 %
-%'sizeThresh' - size threshold for tags in pixels, highly specific to camera
-%   and capture system. Only really helps to clean out noise - start with a
-%   low number at first! Default is 100
+%'sizeThresh' - one element vector sets the mimimum size threshold, two 
+%   element vector sets the minimum and maximum size threshold. Only really
+%   helps to clean out noise - start with a low number at first!
+%   Default is a minimum threshold of 100
 %
 %'robustTrack' - whether or not to identify binary values for tracking codes
 %   from black and white binary image, or to track over a range of values from
@@ -33,9 +34,9 @@ function R = locateCodes(im, varargin)
 %   you must specify a grayscale image to take the pixel values from (can
 %   be the same as 'im');
 %
-%'tagList'- option to add list of pre-specified valid tags to track.
-%   Output from any other tags found in the picture is ignored. Must be a
-%   numerical vector containing a list of valid tags
+%'tagList'- option to add list of pre-specified valid tags to track. The 
+%   taglist should be a vector of tag numbers that are actually in im.
+%   Output from any other tags found in the picture is ignored
 %
 %'threshMode' - options for black-white thresholding. Default is 0, which
 %   uses supplied threshold and above techniques. Alternative option is
@@ -385,10 +386,10 @@ end
 
 if ~isempty(validTagList)
     
-    R = R(ismember([R.number], validTagList));
-    
     if isempty(R);
         disp('No Valid Tags Found');
+    else
+        R = R(ismember([R.number], validTagList));
     end
     
 end
@@ -411,5 +412,6 @@ if vis==1
 end
 
 R = rmfield(R, {'FilledImage', 'isQuad', 'passCode', 'orientation'});
+
 hold off;
 %%
