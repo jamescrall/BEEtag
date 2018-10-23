@@ -5,11 +5,11 @@ function R = locateCodes(im, varargin)
     %
     % Required input:
     %
-    %'im' is an image containing tags, can be rgb, greyscale, or binary (black and white). If a binary image is supplied, no
-    %thresholding is applied.
+    %'im' is an image containing tags, can be rgb or grayscale - currently not
+    %supported to directly input
     %
     %
-    % Optional inputs:
+    % Optional inputs include:
     %
     %'colMode' - determines whether to show gray (1)  or bw (0) image, 2 is
     %   rgb, anything else (i.e. 3) plots on whatever background is already plotted
@@ -32,7 +32,7 @@ function R = locateCodes(im, varargin)
     %   conjunction with a pre-specificed list of tags for tracking. Adding size
     %   restrictions on valied tags is also recommended. When using this option,
     %   you must specify a grayscale image to take the pixel values from (can
-    %   be the same as 'im', as long as 'im' isn't binary);
+    %   be the same as 'im');
     %
     %'tagList'- option to add list of pre-specified valid tags to track. The
     %   taglist should be a vector of tag numbers that are actually in im.
@@ -50,9 +50,6 @@ function R = locateCodes(im, varargin)
     % 'bradleyThreshold' - black-white threshold value after local filtering.
     %   Default value is 3, lower values produce darker images, and vice versa.
     %
-    % 'benchmark' - adding this to the input string makes locateCodes output
-    % timing for different code sections. Mainly for troubleshooting and
-    % optimization purposes.
     %
     %
     % Outputs are:
@@ -68,24 +65,12 @@ function R = locateCodes(im, varargin)
     %
     % number: original identification number of tag
     %
-    % frontX: X coordinate (in pixels) of tag "front"
+    % frontX: X coordiante (in pixels) of tag "front"
     %
     % frontY: Y coordinate (in pixels) of tag "front"
     %
     
     %% Extract optional inputs, do initial image conversion, and display thresholded value
-    
-    benchmark = strcmp('benchmark',varargin);
-    
-    if sum(benchmark) > 0
-        bmrk = 1;
-    else
-        bmrk = 0;
-    end
-    
-    if bmrk == 1
-        tic
-    end
     
     %Check for manually supplied 'vis' value
     v = strcmp('vis', varargin);
@@ -117,82 +102,74 @@ function R = locateCodes(im, varargin)
     end
     
     
-    if ~islogical(im) %If a binary image is already supplied, skip thresholding
-        % threshMode value
-        threshM = strcmp('threshMode', varargin);
-        
-        if sum(threshM) == 0
-            threshMode = 0;
-        else
-            threshMode = cell2mat(varargin(find(threshM == 1) + 1));
-        end
-        
-        
-        % If using adaptive thresholding, define filter size
-        
-        bradleyP = strcmp('bradleyFilterSize', varargin);
-        
-        
-        if sum(bradleyP) == 0
-            smP = [15 15];
-        else
-            smP = cell2mat(varargin(find(bradleyP == 1) + 1));
-        end
-        
-        
-        % If using adaptive thresholding, define threshold value
-        bradleyT = strcmp('bradleyThreshold', varargin);
-        if sum(bradleyT) == 0
-            brT = 3;
-        else
-            brT = cell2mat(varargin(find(bradleyT == 1) + 1));
-        end
-        
-        
-        % Convert image to grayscale if RGB
-        if ndims(im) > 2
-            GRAY = rgb2gray(im);
-        elseif ndims(im) == 2
-            GRAY = im;
-        end
-        
-        
-        %Check for manually supplied threshold value
-        th = strcmp('thresh', varargin);
-        
-        if sum(th) == 0
-            thresh=graythresh(GRAY);
-        else
-            thresh = cell2mat(varargin(find(th == 1) + 1));
-        end
-        
-        
-        %Do B-W conversion
-        if threshMode == 0
-            BW=im2bw(GRAY, thresh);
-        elseif threshMode  == 1
-            BW = bradley(GRAY, smP, brT);
-        end
-        
-        
-        %Display requested image
-        if colMode == 1 && vis == 1
-            imshow(GRAY);
-        end
-        
-        if colMode == 0 && vis== 1
-            imshow(BW);
-        end
-        
-        if colMode == 2 && vis == 1
-            imshow(im);
-        end
+    % threshMode value
+    threshM = strcmp('threshMode', varargin);
+    
+    if sum(threshM) == 0
+        threshMode = 0;
     else
-        BW = im;
-        if vis == 1
-            imshow(BW)
-        end
+        threshMode = cell2mat(varargin(find(threshM == 1) + 1));
     end
+    
+    
+    % If using adaptive thresholding, define filter size
+    bradleyP = strcmp('bradleyFilterSize', varargin);
+    
+    if sum(bradleyP) == 0
+        smP = [15 15];
+    else
+        smP = cell2mat(varargin(find(bradleyP == 1) + 1));
+    end
+    
+    
+    % If using adaptive thresholding, define threshold value
+    bradleyT = strcmp('bradleyThreshold', varargin);
+    if sum(bradleyT) == 0
+        brT = 3;
+    else
+        brT = cell2mat(varargin(find(bradleyT == 1) + 1));
+    end
+    
+    
+    % Convert image to grayscale if RGB
+    if ndims(im) > 2
+        GRAY = rgb2gray(im);
+    elseif ndims(im) == 2
+        GRAY = im;
+    end
+    
+    
+    %Check for manually supplied threshold value
+    th = strcmp('thresh', varargin);
+    
+    if sum(th) == 0
+        thresh=graythresh(GRAY);
+    else
+        thresh = cell2mat(varargin(find(th == 1) + 1));
+    end
+    
+    
+    %Do B-W conversion
+    if threshMode == 0
+        BW=im2bw(GRAY, thresh);
+    elseif threshMode  == 1
+        BW = bradley(GRAY, smP, brT);
+    end
+    
+    
+    %Display requested image
+    if colMode == 1 && vis == 1
+        imshow(GRAY);
+    end
+    
+    if colMode == 0 && vis== 1
+        imshow(BW);
+    end
+    
+    if colMode == 2 && vis == 1
+        imshow(im);
+    end
+    
     
     % Define tracking mode
     trackM = strcmp('robustTrack', varargin);
@@ -217,62 +194,75 @@ function R = locateCodes(im, varargin)
     end
     
     
-    
     %Marker size for green points on potential tag corners
     cornerSize = 10;
     
-    if bmrk == 1
-        tm = toc;
-        disp(strcat(num2str(tm), {' seconds for initial inputs'}))
-    end
-    %% Segment region w/ regionprops
-    if bmrk == 1
-        tic
-    end
+    %% Find contiguous white regions
+    sizeThreshDef = [200 3000];
     
-    R = regionprops(BW, 'Centroid','Area','BoundingBox','FilledImage');
-    
-    if bmrk == 1
-        tm = toc;
-        disp(strcat(num2str(tm), {' seconds for regionprops'}))
+    if numel(sizeThresh) == 1 %If one element is input for sizeThresh, replace minimum
+        
+        sizeThreshDef(1) = sizeThresh;
+        
+    elseif numel(sizeThresh) == 2 %If input for sizeThresh has two values, replace min and max
+        
+        sizeThreshDef = sizeThresh;
+        
     end
     
+    % extract binary blobs and measure area
+    cc = bwconncomp(BW, 8);
+    area = cellfun(@numel,cc.PixelIdxList);
     
+    % threshold blobs by area
+    below_min = area  < sizeThresh(1);
+    above_max = area > sizeThresh(2);
     
-    %% Region-by-region-tracking
-    if bmrk == 1
-        tic
-    end
-    % Set size threshold for tags if supplied
-    if numel(sizeThresh) == 1
-        
-        R = R([R.Area] > sizeThresh);
-        
-    elseif numel(sizeThresh) == 2
-        
-        R =  R([R.Area] > sizeThresh(1) & [R.Area] < sizeThresh(2));
-        
+    % remove blobs with areas out of bounds
+    oob = below_min | above_max;
+    
+    if any(oob)
+        cc.PixelIdxList(oob) = [];
+        cc.NumObjects = cc.NumObjects - sum(oob);
+        area(oob) = [];
     else
-        
-        disp('sizeThresh has an incorrect numbers of elements: Please supply either a single number or a two-element numeric vector');
-        return;
-        
-    end
-    
-    if isempty(R)
-        
         disp('No sufficiently large what regions detected - try changing thresholding values for binary image threshold (thresh) or tag size (sizeThresh)');
         return
-        
     end
     
+    R=regionprops(cc, 'Centroid','Area','BoundingBox','FilledImage');
     
-    % Find white regions that are potentially tags
+    %R = regionprops(BW, 'Centroid','Area','BoundingBox','FilledImage');
+    %% Set size threshold for tags if supplied
+    
+    %     if numel(sizeThresh) == 1
+    %
+    %         R = R([R.Area] > sizeThresh);
+    %
+    %     elseif numel(sizeThresh) == 2
+    %
+    %         R =  R([R.Area] > sizeThresh(1) & [R.Area] < sizeThresh(2));
+    %
+    %     else
+    %
+    %         disp('sizeThresh has an incorrect numbers of elements: Please supply either a single number or a two-element numeric vector');
+    %         return;
+    %
+    %     end
+    %
+    %     if isempty(R)
+    %
+    %         disp('No sufficiently large what regions detected - try changing thresholding values for binary image threshold (thresh) or tag size (sizeThresh)');
+    %         return
+    %
+    %     end
+    
+    %% Find white regions that are potentially tags
     for i = 1:numel(R)
         
         try
             warning('off', 'all');
-            [isq,cnr] = fitquad(R(i).BoundingBox, R(i).FilledImage);
+            [isq,cnr] = fitquad( R(i).BoundingBox, R(i).FilledImage);
             warning('on', 'all');
             R(i).isQuad = isq;
             
@@ -292,8 +282,7 @@ function R = locateCodes(im, varargin)
     
     R = R(logical([R.isQuad]));
     
-    
-    % Loop over all white regions that could be squares, and check for valid tags
+    %% Loop over all white regions that could be squares, and check for valid tags
     
     if isempty(R)
         
@@ -390,7 +379,7 @@ function R = locateCodes(im, varargin)
     end
     
     
-    % Remove invalid tags and find tag front
+    %% Remove invalid tags and find tag front
     R = R([R.passCode]==1);
     
     
@@ -426,7 +415,7 @@ function R = locateCodes(im, varargin)
         %
     end
     
-    % If supplied, remove codes that aren't part of supplied valid tag list
+    %% If supplied, remove codes that aren't part of supplied valid tag list
     
     if ~isempty(validTagList)
         
@@ -438,14 +427,8 @@ function R = locateCodes(im, varargin)
         
     end
     
-    if bmrk == 1
-        tm = toc;
-        disp(strcat(num2str(tm), {' seconds for region-by-region code verificiation'}));
-    end
+    
     %% Optional code visualization
-    if bmrk == 1
-        tic
-    end
     
     if vis==1
         for i = 1:numel(R)
@@ -460,10 +443,7 @@ function R = locateCodes(im, varargin)
             plot(R(i).frontX, R(i).frontY, 'b.', 'MarkerSize', cornerSize);
         end
     end
-    if bmrk == 1
-        tm = toc;
-        disp(strcat(num2str(tm), {' seconds for visual output'}));
-    end
+    
     R = rmfield(R, {'FilledImage', 'isQuad', 'passCode', 'orientation'});
     
     hold off;
