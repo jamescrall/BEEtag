@@ -215,8 +215,8 @@ function R = locateCodes(im, varargin)
     area = cellfun(@numel,cc.PixelIdxList);
     
     % threshold blobs by area
-    below_min = area  < sizeThresh(1);
-    above_max = area > sizeThresh(2);
+    below_min = area  < sizeThreshDef(1);
+    above_max = area > sizeThreshDef(2);
     
     % remove blobs with areas out of bounds
     oob = below_min | above_max;
