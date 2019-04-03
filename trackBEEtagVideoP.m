@@ -43,8 +43,8 @@ function trackingData = trackBEEtagVideoP(vid, brFilt, brThresh, taglist)
     parfor i = 1:nframes
         %%
         
-%       try    % Optional try/catch loop. To implement this to catch rare
-%               %errors, uncomment this and lines below to ignore rare errors
+        try    % Optional try/catch loop. To implement this to catch rare
+            %errors, uncomment this and lines below to ignore rare errors
             im = rgb2gray(read(vid,i));
             
             F = locateCodes(im,'threshMode', 1,'sizeThresh', [200 1500], 'bradleyFilterSize', brFilt, 'bradleyThreshold', brThresh, 'vis', 0);
@@ -63,11 +63,11 @@ function trackingData = trackBEEtagVideoP(vid, brFilt, brThresh, taglist)
                 end
             end
             
-%          % See note above
-%         catch
-%             disp(strcat('Error in frame ', num2str(i), ', skipping...'));
-%         end
-
+            %          % See note above
+        catch
+            disp(['Error in frame ', num2str(i), ', skipping...']);
+        end
+        
         
         hbar.iterate(1);
     end
